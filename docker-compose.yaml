@@ -2,6 +2,13 @@ version: "3.7"
 services:
   backend:
     image: micadoproject/micado_backend:12.20.1
+    depends_on:
+      # - git:
+      #   condition: service_healthy
+      #   restart: true
+      micado_db:
+        condition: service_healthy
+        restart: true
     stdin_open: true
     tty: true
     volumes:
@@ -57,6 +64,12 @@ services:
   micado_db:
     image: groonga/pgroonga:2.3.4-alpine-11-slim
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s    
     stdin_open: true
     tty: true
     env_file:
@@ -80,6 +93,11 @@ services:
 
   git:
     image: gitea/gitea:1.12.2
+    restart: always
+    depends_on:
+      micado_db:
+        condition: service_healthy
+        restart: true
     networks:
       - micado_net
     ports:
@@ -101,17 +119,10 @@ services:
       SECRET_KEY: ${GIT_SECRET_KEY}
       DISABLE_REGISTRATION: "true"
     volumes:
-      - git_data:/data
+      - ./git_data:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
   #    command: "sh -c '/bin/s6-svscan /etc/s6 && /app/gitea/gitea admin create-user --name=gitea --password=gitea --email=test@xx.com --admin --must-change-password=false'"
-
-  testnode:
-    image: micadoproject/backend
-    ports:
-      - "3001:3000"
-    networks:
-      - micado_net
 
 volumes:
   postgres_data:
