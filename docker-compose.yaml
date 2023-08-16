@@ -93,7 +93,7 @@ services:
 
   git:
     image: gitea/gitea:1.12.2
-    restart: always
+    # restart: always
     depends_on:
       micado_db:
         condition: service_healthy
@@ -112,7 +112,7 @@ services:
       INSTALL_LOCK: "true"
       DB_TYPE: postgres
       DB_HOST: micado_db:5432
-      DB_NAME: ${POSTGRES_DB}
+      DB_NAME: gitea
       DB_USER: ${GITEA_DB_USER}
       DB_PASSWD: ${GITEA_DB_PWD}
       GIT_HOSTNAME: ${GIT_HOSTNAME}
@@ -123,7 +123,44 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
   #    command: "sh -c '/bin/s6-svscan /etc/s6 && /app/gitea/gitea admin create-user --name=gitea --password=gitea --email=test@xx.com --admin --must-change-password=false'"
-
+  
+  keycloak:
+    image: jboss/keycloak:16.1.1
+    depends_on:
+      micado_db:
+        condition: service_healthy
+        restart: true
+    # domainname: micadoproject.eu
+    env_file:
+      - .env
+    command: ["-b","0.0.0.0"]
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_USER: ${KEYCLOAK_DB_USER}
+      DB_SCHEMA: ${KEYCLOAK_DB_SCHEMA}
+      DB_PASSWORD: ${KEYCLOAK_DB_PWD}
+      KEYCLOAK_USER: ${WSO2_IDENTITY_ADMIN_USER}
+      KEYCLOAK_PASSWORD: ${WSO2_IDENTITY_ADMIN_PWD}
+      IDENTITY_HOSTNAME: ${IDENTITY_HOSTNAME}
+      DB_ADDR: micado_db:5432
+      DB_DATABASE: keycloak
+      KEYCLOAK_LOGLEVEL: DEBUG
+      PROXY_ADDRESS_FORWARDING: "true"
+      KEYCLOAK_HOSTNAME: ${IDENTITY_HOSTNAME}
+      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+      #JDBC_PARAMS: "ssl=true"
+    ports:
+      - 8100:8100
+    # volumes:
+    #   - type: bind
+    #     source: ./keycloak/keycloak-config/
+    #     target: /opt/jboss/keycloak/standalone/configuration/
+    #   - type: bind
+    #     source: ./keycloak/keycloak-extensions/
+    #     target: /opt/jboss/keycloak/standalone/deployments/
+    #   - ./keycloak/themes/micado:/opt/jboss/keycloak/themes/micado
+    networks:
+      - micado_net
 volumes:
   postgres_data:
     driver: local
@@ -144,11 +181,6 @@ volumes:
     driver_opts:
       type: none
       device: ./application
-      o: bind
-  git_data:
-    driver_opts:
-      type: none
-      device: ./git_data
       o: bind
   shared_images:
     driver: local
