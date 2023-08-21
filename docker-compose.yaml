@@ -77,8 +77,9 @@ services:
       # - prod.env
     ports:
       - 127.0.0.1:5532:5432
+      # - 5532:5432
     volumes:
-      - ./db_data:/var/lib/postgresql/data
+      - micado-db_data:/var/lib/postgresql/data
       - ./db_init:/docker-entrypoint-initdb.d
       # - type: volume
       #   source: postgres_data
@@ -93,7 +94,7 @@ services:
 
   git:
     image: gitea/gitea:1.12.2
-    # restart: always
+    restart: always
     depends_on:
       micado_db:
         condition: service_healthy
@@ -107,19 +108,15 @@ services:
       - .env
       # - prod.env
     environment:
-      APP_NAME: "micado git"
-      RUN_MODE: prod
-      INSTALL_LOCK: "true"
+      GIT_HOSTNAME: ${GIT_HOSTNAME}
       DB_TYPE: postgres
-      DB_HOST: micado_db:5432
-      DB_NAME: gitea
+      DB_HOST: micado_db:${POSTGRES_PORT}
+      DB_NAME: ${POSTGRES_DB}
       DB_USER: ${GITEA_DB_USER}
       DB_PASSWD: ${GITEA_DB_PWD}
-      GIT_HOSTNAME: ${GIT_HOSTNAME}
-      SECRET_KEY: ${GIT_SECRET_KEY}
       DISABLE_REGISTRATION: "true"
     volumes:
-      - ./git_data:/data
+      - micado-git_data:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
   #    command: "sh -c '/bin/s6-svscan /etc/s6 && /app/gitea/gitea admin create-user --name=gitea --password=gitea --email=test@xx.com --admin --must-change-password=false'"
@@ -188,6 +185,8 @@ volumes:
       type: none
       device: ./shared_images
       o: bind
+  micado-db_data:
+  micado-git_data:
 
 networks:
   micado_net:
