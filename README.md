@@ -1,5 +1,3 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/micado-eu/backend/badge)](https://www.codefactor.io/repository/github/micado-eu/backend)
-
 # Micado backend application
 This is the backend application of the MICADO project.  This is where all the business application logic will reside:
 - API
@@ -70,19 +68,19 @@ The container will mount the application folder and it will be possibile to code
 Wait until you see `Server is running at http://[::1]:3000`
 
 ### Work with gitea
-For developing the backend for the weblate integration we need also to use GITEA so this means that we need to install and run the GITEA container
+![Login to Gitea](./readme-img/gitea-start-screen.png)
 
-The first time that the container is run we need to create the admin user with the following command from within the container (using custom user and password):
-```
-/app/gitea/gitea admin create-user --name=gitea --password=gitea --email=test@xx.com --admin --must-change-password=false
-```
+After the database is running healthy, gitea is initialised. Once finished, go to the git link (for local development [localhost:3001](localhost:3001)) and klick on the "sign in button"
 
-To execute the container properly at the moment (until an issue is solved) the user will have to open the git_data/gitea/conf/app.ini and add the following:
-```
-[database]
-...
-SCHEMA  = gitea
-```
+
+![Set gitea schema](./readme-img/gitea-schema.png)
+
+Almost all details are set here, gitea needs to be inserted in the schema field
+
+
+![Set gitea admin account](./readme-img/gitea-admin-account.png)
+
+As we disabled self-registration (´DISABLE_REGISTRATION` → see env variables), we neeed to create an admin account by providing the details above.
 
 
 ### To add a CRUD endpoint for a Model
