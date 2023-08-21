@@ -67,26 +67,18 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
       interval: 30s
-      timeout: 60s
-      retries: 5
-      start_period: 80s    
+      timeout: 100s
+      retries: 15
+      start_period: 60s    
     stdin_open: true
     tty: true
     env_file:
       - .env
-      # - prod.env
     ports:
       - 127.0.0.1:5532:5432
-      # - 5532:5432
     volumes:
       - micado-db_data:/var/lib/postgresql/data
       - ./db_init:/docker-entrypoint-initdb.d
-      # - type: volume
-      #   source: postgres_data
-      #   target: /var/lib/postgresql/data
-      # - type: volume
-      #   source: postgres_init
-      #   target: /docker-entrypoint-initdb.d
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     networks:
@@ -94,33 +86,31 @@ services:
 
   git:
     image: gitea/gitea:1.12.2
-    restart: always
-    depends_on:
-      micado_db:
-        condition: service_healthy
-        restart: true
-    networks:
-      - micado_net
-    ports:
-      - "3001:3000"
-      - "222:22"
-    env_file:
-      - .env
-      # - prod.env
+    container_name: gitea
     environment:
       GIT_HOSTNAME: ${GIT_HOSTNAME}
+      INSTALL_LOCK: "false"
       DB_TYPE: postgres
       DB_HOST: micado_db:${POSTGRES_PORT}
       DB_NAME: ${POSTGRES_DB}
       DB_USER: ${GITEA_DB_USER}
       DB_PASSWD: ${GITEA_DB_PWD}
       DISABLE_REGISTRATION: "true"
+    restart: always
+    networks:
+      - micado_net
     volumes:
       - micado-git_data:/data
+      - ./logs/gitea:/data/gitea/log
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-  #    command: "sh -c '/bin/s6-svscan /etc/s6 && /app/gitea/gitea admin create-user --name=gitea --password=gitea --email=test@xx.com --admin --must-change-password=false'"
-  
+    ports:
+      - "3001:3000"
+      - "222:22"
+    depends_on:
+      micado_db:
+        condition: service_healthy
+        restart: true  
   keycloak:
     image: jboss/keycloak:16.1.1
     depends_on:
@@ -191,4 +181,4 @@ volumes:
 networks:
   micado_net:
     # driver: bridge
-    external: true
+    # external: true
