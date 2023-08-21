@@ -3,3 +3,5 @@ prod.env
 db_data
 git_data
 .env
+logs/
+mount/
