@@ -129,23 +129,19 @@ services:
       KEYCLOAK_USER: ${WSO2_IDENTITY_ADMIN_USER}
       KEYCLOAK_PASSWORD: ${WSO2_IDENTITY_ADMIN_PWD}
       IDENTITY_HOSTNAME: ${IDENTITY_HOSTNAME}
-      DB_ADDR: micado_db:5432
-      DB_DATABASE: keycloak
+      DB_ADDR: micado_db
+      DB_DATABASE: micado
       KEYCLOAK_LOGLEVEL: DEBUG
       PROXY_ADDRESS_FORWARDING: "true"
       KEYCLOAK_HOSTNAME: ${IDENTITY_HOSTNAME}
       # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
       #JDBC_PARAMS: "ssl=true"
     ports:
-      - 8100:8100
-    # volumes:
-    #   - type: bind
-    #     source: ./keycloak/keycloak-config/
-    #     target: /opt/jboss/keycloak/standalone/configuration/
-    #   - type: bind
-    #     source: ./keycloak/keycloak-extensions/
-    #     target: /opt/jboss/keycloak/standalone/deployments/
-    #   - ./keycloak/themes/micado:/opt/jboss/keycloak/themes/micado
+      - 8080:8080
+    volumes:
+      - ./keycloak/keycloak-config/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml
+      - ./keycloak/keycloak-extensions/event-listener-http-jar-with-dependencies.jar:/opt/jboss/keycloak/standalone/deployments/event-listener-http-jar-with-dependencies.jar
+      - ./keycloak/themes/micado:/opt/jboss/keycloak/themes/micado
     networks:
       - micado_net
 volumes:
