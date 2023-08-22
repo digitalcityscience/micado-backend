@@ -120,7 +120,13 @@ services:
     # domainname: micadoproject.eu
     env_file:
       - .env
-    command: ["-b","0.0.0.0"]
+    command: 
+    # ["-b","0.0.0.0"]
+      - "-b 0.0.0.0"
+      - "-Dkeycloak.migration.action=import"
+      - "-Dkeycloak.migration.provider=singleFile"
+      - "-Dkeycloak.migration.file=/tmp/realms/keycloak_realms.json"
+      - "-Dkeycloak.migration.strategy=IGNORE_EXISTING"
     environment:
       DB_VENDOR: POSTGRES
       DB_USER: ${KEYCLOAK_DB_USER}
@@ -128,12 +134,12 @@ services:
       DB_PASSWORD: ${KEYCLOAK_DB_PWD}
       KEYCLOAK_USER: ${WSO2_IDENTITY_ADMIN_USER}
       KEYCLOAK_PASSWORD: ${WSO2_IDENTITY_ADMIN_PWD}
-      IDENTITY_HOSTNAME: ${IDENTITY_HOSTNAME}
+      # IDENTITY_HOSTNAME: ${IDENTITY_HOSTNAME}
       DB_ADDR: micado_db
       DB_DATABASE: micado
       KEYCLOAK_LOGLEVEL: DEBUG
       PROXY_ADDRESS_FORWARDING: "true"
-      KEYCLOAK_HOSTNAME: ${IDENTITY_HOSTNAME}
+      KEYCLOAK_HOSTNAME: localhost
       # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
       #JDBC_PARAMS: "ssl=true"
     ports:
@@ -142,6 +148,7 @@ services:
       - ./keycloak/keycloak-config/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml
       - ./keycloak/keycloak-extensions/event-listener-http-jar-with-dependencies.jar:/opt/jboss/keycloak/standalone/deployments/event-listener-http-jar-with-dependencies.jar
       - ./keycloak/themes/micado:/opt/jboss/keycloak/themes/micado
+      - ./keycloak/realms/keycloak_realms.json:/tmp/realms/keycloak_realms.json
     networks:
       - micado_net
 volumes:
