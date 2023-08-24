@@ -1,5 +1,14 @@
 version: "3.7"
 services:
+  prep_content:
+    build: 
+      context: ./
+      dockerfile: ./prep_content/Dockerfile
+    volumes:
+      # - ../keycloak/realms/keycloak_realms.json:/tmp/source/keycloak_realms.json
+      - ./keycloak_realm:/tmp/realms/
+    env_file:
+      - .env
   backend:
     image: micadoproject/micado_backend:12.20.1
     depends_on:
@@ -148,10 +157,13 @@ services:
       - ./keycloak/keycloak-config/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml
       - ./keycloak/keycloak-extensions/event-listener-http-jar-with-dependencies.jar:/opt/jboss/keycloak/standalone/deployments/event-listener-http-jar-with-dependencies.jar
       - ./keycloak/themes/micado:/opt/jboss/keycloak/themes/micado
-      - ./keycloak/realms/keycloak_realms.json:/tmp/realms/keycloak_realms.json
+      # - ./keycloak/realms/keycloak_realms_group_roles_clients.json:/tmp/realms/keycloak_realms.json
+      # - ./keycloak_realm/keycloak_realms.json:/tmp/realms/keycloak_realms.json
+      - ./keycloak_realm:/tmp/realms/
     networks:
       - micado_net
 volumes:
+  keycloak_realm:
   postgres_data:
     driver: local
     driver_opts:
